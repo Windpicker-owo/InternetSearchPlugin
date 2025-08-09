@@ -27,7 +27,7 @@ class SearchOnlineTool(BaseTool):
     async def execute(self, function_args) -> dict[str, str]:
         """执行知识搜索"""
         try:
-            query = function_args.get("query")  
+            query = function_args.get("question")  
             search_results = await self._search_knowledge(query) # 执行搜索逻辑   
             result = self._format_search_results(query, search_results) # 格式化结果
             return {"name": self.name, "content": result}
@@ -35,6 +35,15 @@ class SearchOnlineTool(BaseTool):
             return {"name": self.name, "content": f"知识搜索失败: {str(e)}"}
 
     async def direct_execute(self, **function_args) -> str:
+        '''
+        直接调用联网搜索工具
+
+        Args:
+            question: 要进行搜索的问题或关键词
+
+        Return:
+            result: 模型返回的结果
+        '''
         if self.parameters and (
             missing := [p for p in self.parameters.get("required", []) if p not in function_args]
         ):
@@ -42,7 +51,7 @@ class SearchOnlineTool(BaseTool):
                 f"工具类 {self.__class__.__name__} 缺少必要参数: {', '.join(missing)}"
             )
         try:
-            query = function_args.get("query")
+            query = function_args.get("question")
             # 执行搜索逻辑
             search_results = await self._search_knowledge(query)
             return search_results.get("content", "")
@@ -52,31 +61,41 @@ class SearchOnlineTool(BaseTool):
 
     async def _search_knowledge(self, query: str) -> list:
         """执行知识搜索"""
+        logger.info(f"正在执行搜索，搜索内容：{query}")
         client = OpenAI(
             base_url=self.get_config("model.base_url"),
             api_key=self.get_config("model.api_key"),
         )
-        completion = client.chat.completions.create(
-            model=self.get_config("model.model"),
-            messages=[
+        try:
+            completion = client.chat.completions.create(
+                model=self.get_config("model.model"),
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "你是专业的网络搜索助手，擅长从互联网上获取最新信息",
+                    },
+                    {
+                        "role": "user",
+                        "content": f"现在是{time.strftime("%Y-%m-%d %H:%M", time.localtime())},一些爱打游戏、爱追番、爱刷抖音b站小红书的年轻人发来了一串消息，请在网络上搜索有关“{query}的内容”,只回答与{query}的方面，选用最新的消息来源，不要回答无关的信息",
+                    },
+                ],
+                temperature=0.2,
+            )
+            return [
                 {
-                    "role": "system",
-                    "content": "你是专业的网络搜索助手，擅长从互联网上获取最新信息",
-                },
+                    "title": f"{query}的解释",
+                    "content": completion.choices[0].message.content,
+                }
+            ]
+        except Exception as e:
+            logger.error(f"执行搜索时出现错误：{e}")
+            return [
                 {
-                    "role": "user",
-                    "content": f"现在是{time.strftime("%Y-%m-%d %H:%M", time.localtime())},一些爱打游戏、爱追番、爱刷抖音b站小红书的年轻人发来了一串消息，请在网络上搜索有关“{query}的内容”,只回答与{query}的方面，选用最新的消息来源，不要回答无关的信息",
-                },
-            ],
-            temperature=0.2,
-        )
+                    "title": f"{query}的解释",
+                    "content": "执行搜索失败",
+                }
+            ]
 
-        return [
-            {
-                "title": f"{query}的解释",
-                "content": completion.choices[0].message.content,
-            }
-        ]
 
     def _format_search_results(self, query: str, results: list) -> str:
         """格式化搜索结果"""
@@ -126,20 +145,17 @@ class InternetSearchPlugin(BasePlugin):
             "enabled": ConfigField(
                 type=bool, default=False, description="是否启用插件"
             ),
-            "allow_llm_use": ConfigField(
-                type=bool, default=True, description="是否允许LLM使用此插件"
-            ),
         },
         "model": {
             "base_url": ConfigField(
                 type=str,
-                default="https://ark.cn-beijing.volces.com/api/v3/bots",
+                default="https://rinkoai.com/v1",
                 description="模型API基础URL",
             ),
             "api_key": ConfigField(
                 type=bool, default="xxxxxxxxxxxxxxxxx", description="你的API Key"
             ),
-            "model": ConfigField(type=str, default="", description="使用的模型名称"),
+            "model": ConfigField(type=str, default="gpt-4.1-search", description="使用的模型名称"),
         },
     }
 
