@@ -58,8 +58,10 @@ model = "gpt-4.1-search"             # 使用的模型名称
 本插件支持外部插件调用search_online工具进行联网搜索，并对直接调用的场景返回结果进行了优化
 
 ```python
-# 创建工具实例
-search_tool = SearchOnlineTool()
+from src.plugin_system.apis import tool_api
+
+# 获取工具实例
+search_tool = tool_api.get_tool_instance("search_tool")
 
 # 直接调用搜索
 result = await search_tool.direct_execute(question="最新的AI技术发展")
