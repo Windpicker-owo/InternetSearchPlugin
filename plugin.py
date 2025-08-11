@@ -76,7 +76,7 @@ class SearchOnlineTool(BaseTool):
                     },
                     {
                         "role": "user",
-                        "content": f"现在是{time.strftime("%Y-%m-%d %H:%M", time.localtime())},一些爱打游戏、爱追番、爱刷抖音b站小红书的年轻人发来了一串消息，请在网络上搜索有关“{query}的内容”,只回答与{query}的方面，选用最新的消息来源，不要回答无关的信息",
+                        "content": f"现在是{time.strftime('%Y-%m-%d %H:%M', time.localtime())},一些爱打游戏、爱追番、爱刷抖音b站小红书的年轻人发来了一串消息，请在网络上搜索有关“{query}的内容”,只回答与{query}的方面，选用最新的消息来源，不要回答无关的信息",
                     },
                 ],
                 temperature=0.2,
