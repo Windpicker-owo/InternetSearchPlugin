@@ -220,6 +220,7 @@ class InternetSearchPlugin(BasePlugin):
                 type=str, default="internet_search_plugin", description="插件名称"
             ),
             "version": ConfigField(type=str, default="1.1.0", description="插件版本"),
+            "config_version": ConfigField(type=str, default="1.2.0", description="配置文件版本"),
             "enabled": ConfigField(
                 type=bool, default=False, description="是否启用插件"
             ),
@@ -231,7 +232,7 @@ class InternetSearchPlugin(BasePlugin):
                 description="模型API基础URL",
             ),
             "api_key": ConfigField(
-                type=str, default="", description="你的API Key（建议通过环境变量设置）"
+                type=str, default="", description="你的API Key"
             ),
             "model": ConfigField(type=str, default="gpt-4.1-search", description="使用的模型名称"),
         },
