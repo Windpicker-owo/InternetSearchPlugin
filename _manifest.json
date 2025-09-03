@@ -11,7 +11,7 @@
   
   "host_application": {
     "min_version": "0.10.0",
-    "max_version": "0.10.1"
+    "max_version": "0.10.2"
   },
   "homepage_url": "https://github.com/Windpicker-owo/InternetSearchPlugin",
   "repository_url": "https://github.com/Windpicker-owo/InternetSearchPlugin",
